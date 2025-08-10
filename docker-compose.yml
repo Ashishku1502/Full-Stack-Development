@@ -1,0 +1,35 @@
+version: '3.9'
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/env.example
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+  integration_api:
+    build: ./nest_or_python_module/fastapi_integration
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/idurar-erp-crm
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+  nextjs_crud_app:
+    build: ./nextjs_crud_app
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/idurar-projects
+    ports:
+      - "3001:3000"
+    depends_on:
+      - mongo
+volumes:
+  mongo_data:
